@@ -116,3 +116,25 @@ async function seed(existingClient = null) {
             RETURNING id
         `)
 
+        // ── Enrolments ───────────────────────────────────────────────────────────
+        // Parameters:
+        // $1: parts[0], $2: parts[1], $3: parts[2], $4: parts[3], $5: parts[4], $6: parts[6], $7: parts[7]
+        // $8: t1, $9: t2, $10: t3, $11: t4
+        // $12: phase0, $13: phase1, $14: phase3, $15: phase6, $16: phase8
+        const { rows: enrolData } = await client.query(`
+            INSERT INTO enrolments (participant_id, trial_id, phase_id, enrolment_date, status) VALUES
+                ($1::int,  $8::int,  $12::int, '2024-03-15', 'enrolled'),
+                ($2::int,  $8::int,  $12::int, '2024-03-22', 'enrolled'),
+                ($3::int,  $8::int,  $13::int, '2024-04-01', 'completed'),
+                ($4::int,  $9::int,  $14::int, '2024-07-01', 'enrolled'),
+                ($5::int,  $9::int,  $14::int, '2024-07-10', 'enrolled'),
+                ($6::int,  $10::int, $15::int, '2023-09-15', 'enrolled'),
+                ($7::int,  $10::int, $15::int, '2023-09-20', 'withdrawn'),
+                ($1::int,  $11::int, $16::int, '2025-01-20', 'enrolled')
+            RETURNING id
+        `, [
+            parts[0].id, parts[1].id, parts[2].id, parts[3].id, parts[4].id, parts[6].id, parts[7].id,
+            t1.id, t2.id, t3.id, t4.id,
+            phases[0].id, phases[1].id, phases[3].id, phases[6].id, phases[8].id
+        ])
+
