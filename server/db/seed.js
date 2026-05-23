@@ -27,3 +27,14 @@ async function seed(existingClient = null) {
         await client.query(`SELECT setval('users_id_seq', 1, false)`)
         await client.query(`SELECT setval('enrolments_id_seq', 1, false)`)
         await client.query(`SELECT setval('checkins_id_seq', 1, false)`)
+
+        // ── Researchers ──────────────────────────────────────────────────────────
+        const { rows: researchers } = await client.query(`
+            INSERT INTO researchers (first_name, last_name, email, department) VALUES
+                ('Siobhán',  'O''Brien',   's.obrien@svuh.ie',    'Oncology'),
+                ('Ciarán',   'Murphy',     'c.murphy@svuh.ie',    'Cardiology'),
+                ('Aoife',    'Walsh',      'a.walsh@svuh.ie',     'Neurology'),
+                ('Declan',   'Flanagan',   'd.flanagan@svuh.ie',  'Respiratory Medicine')
+            RETURNING id, email
+        `)
+        const [res1, res2, res3, res4] = researchers
