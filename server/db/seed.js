@@ -63,3 +63,40 @@ async function seed(existingClient = null) {
             INSERT INTO users (email, password_hash, role)
             VALUES ('coord@svuh.ie', $1, 'coordinator')
         `, [resPasswordHash])
+
+        // ── Trials ───────────────────────────────────────────────────────────────
+        const { rows: trialsData } = await client.query(`
+            INSERT INTO trials (researcher_id, title, description, start_date, end_date, status) VALUES
+                ($1, 'SVUH-ONCO-2024-01',
+                    'Phase II trial evaluating efficacy of adjuvant immunotherapy in early-stage colorectal cancer patients post-resection.',
+                    '2024-03-01', '2026-02-28', 'active'),
+                ($2, 'SVUH-CARD-2024-02',
+                    'Randomised controlled trial assessing novel anticoagulation therapy in non-valvular atrial fibrillation.',
+                    '2024-06-15', '2026-06-14', 'recruiting'),
+                ($3, 'SVUH-NEUR-2023-01',
+                    'Longitudinal observational study of early biomarkers in Parkinson''s disease progression.',
+                    '2023-09-01', '2027-08-31', 'active'),
+                ($4, 'SVUH-RESP-2025-01',
+                    'Pilot study of home-based pulmonary rehabilitation using digital monitoring in COPD patients.',
+                    '2025-01-10', '2025-12-31', 'recruiting')
+            RETURNING id
+        `, [res1.id, res2.id, res3.id, res4.id])
+        const [t1, t2, t3, t4] = trialsData
+
+        // ── Trial Phases ─────────────────────────────────────────────────────────
+        const { rows: phasesData } = await client.query(`
+            INSERT INTO trial_phases (trial_id, phase_name, description, duration_weeks, order_number) VALUES
+                ($1, 'Screening',      'Eligibility assessment and baseline bloods', 4,  1),
+                ($1, 'Treatment',      'Immunotherapy administration cycle',          24, 2),
+                ($1, 'Follow-up',      'Post-treatment monitoring and response eval', 24, 3),
+                ($2, 'Screening',      'Eligibility and cardiac baseline workup',     6,  1),
+                ($2, 'Dose Titration', 'Anticoagulant dose optimisation',            12, 2),
+                ($2, 'Maintenance',    'Stable dose monitoring',                     30, 3),
+                ($3, 'Baseline',       'Initial biomarker panel and MRI',            8,  1),
+                ($3, 'Year 1 Follow',  '12-month reassessment',                      8,  2),
+                ($4, 'Onboarding',     'Device setup and training',                  2,  1),
+                ($4, 'Active Rehab',   '12-week home rehab programme',              12,  2)
+            RETURNING id
+        `, [t1.id, t2.id, t3.id, t4.id])
+        const phases = phasesData
+
