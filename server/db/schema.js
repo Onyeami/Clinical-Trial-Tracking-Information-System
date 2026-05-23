@@ -102,3 +102,32 @@ async function createSchema() {
                 created_at      TIMESTAMPTZ DEFAULT NOW()
             )
         `)
+
+        // Indexes for common query patterns
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_trials_status       ON trials(status)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_trials_researcher   ON trials(researcher_id)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_phases_trial        ON trial_phases(trial_id)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_enrolments_trial    ON enrolments(trial_id)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_enrolments_part     ON enrolments(participant_id)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_enrolments_status   ON enrolments(status)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_checkins_enrolment  ON checkins(enrolment_id)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_checkins_scheduled  ON checkins(scheduled_date)`)
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_users_email          ON users(email)`)
+
+        await client.query('COMMIT')
+        console.log('✓ Schema created successfully')
+    }   catch (err) {
+        await client.query('ROLLBACK')
+        console.error('Schema creation failed:', err.message)
+        throw err
+    }   finally {
+        client.release()
+    }
+}
+
+module.exports = { createSchema }
+
+// Run directly: node db/schema.js
+if (require.main === module) {
+    createSchema().then(() => process.exit(0)).catch(() => process.exit(1))
+}
