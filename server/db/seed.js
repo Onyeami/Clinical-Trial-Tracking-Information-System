@@ -145,3 +145,24 @@ async function seed(existingClient = null) {
         const past1   = new Date(Date.now() - 7  * 86400000).toISOString().slice(0, 10)
         const past2   = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10)
 
+        // Parameters:
+        // $1-4: enrolments
+        // $5: past2, $6: past1, $7: future1, $8: today (swapped with future2 to avoid gap)
+        await client.query(`
+            INSERT INTO checkins (enrolment_id, scheduled_date, actual_date, checkin_type, outcome, notes) VALUES
+                ($1::int, $5::date, $5::date, 'in-person', 'attended',    'Bloods within normal range. Patient tolerating treatment well.'),
+                ($1::int, $6::date, $6::date, 'in-person', 'attended',    'Mild fatigue reported. Dose maintained.'),
+                ($1::int, $7::date, NULL,     'in-person', 'scheduled',   NULL),
+                ($2::int, $5::date, $5::date, 'in-person', 'attended',    'Baseline recorded. No adverse reactions.'),
+                ($2::int, $6::date, NULL,     'remote',    'missed',      'Patient unable to attend. Rescheduled for next week.'),
+                ($2::int, $8::date, NULL,     'in-person', 'scheduled',   NULL),
+                ($3::int, $5::date, $5::date, 'remote',    'attended',    'INR 2.4 — within therapeutic range.'),
+                ($3::int, $6::date, NULL,     'in-person', 'scheduled',   NULL),
+                ($4::int, $5::date, $5::date, 'in-person', 'attended',    'Baseline MRI completed. Biomarkers collected.'),
+                ($4::int, $6::date, NULL,     'remote',    'rescheduled', 'Technical issues with remote platform. Rebooked.')
+            RETURNING id
+        `, [
+            enrolData[0].id, enrolData[1].id, enrolData[3].id, enrolData[5].id, // $1-4
+            past2, past1, future1, today // $5-8
+        ])
+
