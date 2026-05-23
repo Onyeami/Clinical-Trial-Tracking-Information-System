@@ -138,3 +138,10 @@ async function seed(existingClient = null) {
             phases[0].id, phases[1].id, phases[3].id, phases[6].id, phases[8].id
         ])
 
+        // ── Check-ins ────────────────────────────────────────────────────────────
+        const today = new Date().toISOString().slice(0, 10)
+        const future1 = new Date(Date.now() + 7  * 86400000).toISOString().slice(0, 10)
+        const future2 = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+        const past1   = new Date(Date.now() - 7  * 86400000).toISOString().slice(0, 10)
+        const past2   = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10)
+
