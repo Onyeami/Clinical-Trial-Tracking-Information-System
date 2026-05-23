@@ -11,3 +11,17 @@ const pool = new Pool({
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 })
 
+pool.on('error', (err) => {
+    console.error('Unexpected PostgreSQL client error:', err.message)
+})
+
+// Helper: run a query and return rows
+const query = (text, params) => pool.query(text, params)
+
+// Helper: get a single row
+const queryOne = async (text, params) => {
+    const { rows } = await pool.query(text, params)
+    return rows[0] ?? null
+}
+
+module.exports = { pool, query, queryOne }
