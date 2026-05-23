@@ -100,3 +100,19 @@ async function seed(existingClient = null) {
         `, [t1.id, t2.id, t3.id, t4.id])
         const phases = phasesData
 
+        // ── Participants ─────────────────────────────────────────────────────────
+        const { rows: parts } = await client.query(`
+            INSERT INTO participants
+                (first_name, last_name, date_of_birth, pps_number, phone, email, address, consent_status, is_active)
+            VALUES
+                ('Patrick',   'Kelly',      '1968-04-12', '1234567T', '+353 87 111 2233', 'p.kelly@email.ie',    '14 Elm Park, Dublin 4', 'given',   true),
+                ('Mary',      'Doyle',      '1975-11-03', '2345678A', '+353 86 222 3344', 'm.doyle@email.ie',    '7 Sandymount Ave, D4',  'given',   true),
+                ('Seamus',    'Brennan',    '1960-07-22', '3456789B', '+353 83 333 4455', 's.brennan@email.ie',  '3 Merrion Rd, Dublin 4','given',   true),
+                ('Niamh',     'O''Connor',  '1982-01-30', '4567890C', '+353 85 444 5566', 'n.oconnor@email.ie',  '21 Ailesbury Rd, D4',   'given',   true),
+                ('Brendan',   'Farrell',    '1955-09-15', '5678901D', '+353 87 555 6677', 'b.farrell@email.ie',  '9 Shrewsbury Rd, D4',   'given',   true),
+                ('Caoimhe',   'Nolan',      '1990-03-07', '6789012E', '+353 86 666 7788', 'c.nolan@email.ie',    '5 Ballsbridge Tce, D4', 'pending', true),
+                ('Liam',      'McCarthy',   '1948-12-25', '7890123F', '+353 83 777 8899', 'l.mccarthy@email.ie', '18 Pembroke Rd, D4',    'given',   true),
+                ('Sorcha',    'Gallagher',  '1971-06-18', '8901234G', '+353 85 888 9900', 's.gallagher@email.ie','33 Morehampton Rd, D4', 'given',   false)
+            RETURNING id
+        `)
+
