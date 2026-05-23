@@ -38,3 +38,28 @@ async function seed(existingClient = null) {
             RETURNING id, email
         `)
         const [res1, res2, res3, res4] = researchers
+
+        // ── Users ────────────────────────────────────────────────────────────────
+        const salt = await bcrypt.genSalt(10)
+        const adminPasswordHtml = await bcrypt.hash('admin123', salt)
+        const resPasswordHash = await bcrypt.hash('password123', salt)
+
+        // Create Admin
+        await client.query(`
+            INSERT INTO users (email, password_hash, role)
+            VALUES ('admin@svuh.ie', $1, 'admin')
+        `, [adminPasswordHtml])
+
+        // Create Researcher Users (linked to researchers)
+        for (const r of researchers) {
+            await client.query(`
+                INSERT INTO users (researcher_id, email, password_hash, role)
+                VALUES ($1, $2, $3, 'researcher')
+            `, [r.id, r.email, resPasswordHash])
+        }
+
+        // Create a Coordinator
+        await client.query(`
+            INSERT INTO users (email, password_hash, role)
+            VALUES ('coord@svuh.ie', $1, 'coordinator')
+        `, [resPasswordHash])
