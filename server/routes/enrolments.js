@@ -94,3 +94,12 @@ router.post('/', async (req, res, next) => {
         if (!VALID_STATUSES.includes(status)) {
             return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` })
         }
+
+        // Duplicate check — participant already enrolled in this trial
+        const existing = await queryOne(
+            `SELECT id FROM enrolments WHERE participant_id = $1 AND trial_id = $2`,
+            [participant_id, trial_id]
+        )
+        if (existing) {
+            return res.status(409).json({ error: 'Participant is already enrolled in this trial.' })
+        }
