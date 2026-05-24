@@ -103,3 +103,14 @@ router.post('/', async (req, res, next) => {
         if (existing) {
             return res.status(409).json({ error: 'Participant is already enrolled in this trial.' })
         }
+
+        // Consent check
+        const participant = await queryOne(
+            `SELECT consent_status, is_active FROM participants WHERE id = $1`,
+            [participant_id]
+        )
+        if (!participant) return res.status(404).json({ error: 'Participant not found' })
+        if (!participant.is_active) return res.status(400).json({ error: 'Participant is inactive / withdrawn.' })
+        if (participant.consent_status !== 'given') {
+            return res.status(400).json({ error: 'Participant has not given consent.' })
+        }
