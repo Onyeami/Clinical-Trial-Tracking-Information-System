@@ -71,3 +71,19 @@ router.post('/', async (req, res, next) => {
         res.status(201).json(row)
     }   catch (err) { next(err) }
 })
+
+// Standalone handlers for /api/checkins/:id (mounted in app.js)
+const getById = async (req, res, next) => {
+    try {
+        const row = await queryOne(
+            `SELECT c.*,
+                    p.first_name || ' ' || p.last_name AS participant_name,
+                    t.title AS trial_title, t.researcher_id
+                FROM checkins c
+                JOIN enrolments e ON e.id = c.enrolment_id
+                JOIN participants p ON p.id = e.participant_id
+                JOIN trials t ON t.id = e.trial_id
+                WHERE c.id = $1`,
+            [req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Check-in not found' })
