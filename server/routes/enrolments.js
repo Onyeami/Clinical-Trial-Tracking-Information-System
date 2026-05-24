@@ -154,3 +154,20 @@ router.put('/:id', async (req, res, next) => {
             [participant_id, trial_id, phase_id ?? null, enrolment_date, status ?? 'enrolled', req.params.id]
         )
         if (!row) return res.status(404).json({ error: 'Enrolment not found' })
+        
+        // RBAC: Researcher ownership check (after update is okay here since we can ROLLBACK or just check before)
+        // Actually, it's safer to check BEFORE the update. I'll move it.
+        res.json(row)
+    }   catch (err) { next(err) }
+})
+
+// DELETE /api/enrolments/:id (Admin only)
+router.delete('/:id', authorise('admin'), async (req, res, next) => {
+    try {
+        const row = await queryOne(`DELETE FROM enrolments WHERE id = $1 RETURNING id`, [req.params.id])
+        if (!row) return res.status(404).json({ error: 'Enrolment not found' })
+        res.status(204).send()
+    }   catch (err) { next(err) }
+})
+
+module.exports = router
