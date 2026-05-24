@@ -86,3 +86,42 @@ router.post('/', async (req, res, next) => {
         res.status(201).json(row)
     }   catch (err) { next(err) }
 })
+
+// PUT /api/participants/:id
+router.put('/:id', async (req, res, next) => {
+    try {
+        const {
+            first_name, last_name, date_of_birth,
+            pps_number, phone, email, address,
+            consent_status, is_active
+        }   = req.body
+
+        if (!first_name || !last_name || !date_of_birth) {
+            return res.status(400).json({ error: 'first_name, last_name and date_of_birth are required.' })
+        }
+        if (consent_status && !CONSENT_OPTS.includes(consent_status)) {
+            return res.status(400).json({ error: `consent_status must be one of: ${CONSENT_OPTS.join(', ')}` })
+        }
+
+        const row = await queryOne(
+            `UPDATE participants
+            SET first_name = $1, last_name = $2, date_of_birth = $3,
+                pps_number = $4, phone = $5, email = $6, address = $7,
+                consent_status = $8, is_active = $9
+            WHERE id = $10
+            RETURNING *`,
+            [
+                first_name.trim(), last_name.trim(), date_of_birth,
+                pps_number?.trim().toUpperCase() ?? null,
+                phone?.trim() ?? null,
+                email?.trim().toLowerCase() ?? null,
+                address?.trim() ?? null,
+                consent_status ?? 'pending',
+                is_active ?? true,
+                req.params.id
+            ]
+        )
+        if (!row) return res.status(404).json({ error: 'Participant not found' })
+        res.json(row)
+    }   catch (err) { next(err) }
+})
