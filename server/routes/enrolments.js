@@ -82,3 +82,15 @@ router.get('/:id', async (req, res, next) => {
         res.json(row)
     } catch (err) { next(err) }
 })
+
+// POST /api/enrolments
+router.post('/', async (req, res, next) => {
+    try {
+        const { participant_id, trial_id, phase_id, enrolment_date, status = 'enrolled' } = req.body
+
+        if (!participant_id || !trial_id || !enrolment_date) {
+            return res.status(400).json({ error: 'participant_id, trial_id and enrolment_date are required.' })
+        }
+        if (!VALID_STATUSES.includes(status)) {
+            return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` })
+        }
