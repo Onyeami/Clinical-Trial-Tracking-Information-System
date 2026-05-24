@@ -34,3 +34,20 @@ router.get('/', async (req, res, next) => {
         res.json(rows)
     }   catch (err) { next(err) }
 })
+
+// GET /api/participants/:id  — includes pps_number for single record
+router.get('/:id', async (req, res, next) => {
+    try {
+        const row = await queryOne(
+            `SELECT p.*,
+                    COUNT(e.id)::int AS enrolment_count
+            FROM participants p
+            LEFT JOIN enrolments e ON e.participant_id = p.id
+            WHERE p.id = $1
+            GROUP BY p.id`,
+            [req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Participant not found' })
+        res.json(row)
+    }   catch (err) { next(err) }
+})
