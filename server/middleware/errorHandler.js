@@ -8,3 +8,8 @@ function errorHandler(err, req, res, next) {
         const field = detail.match(/\(([^)]+)\)/)?.[1] ?? 'field'
         return res.status(409).json({ error: `Duplicate value: ${field} already exists.` })
     }
+
+    // PostgreSQL foreign key violation
+    if (err.code === '23503') {
+        return res.status(400).json({ error: 'Referenced record does not exist.' })
+    }
