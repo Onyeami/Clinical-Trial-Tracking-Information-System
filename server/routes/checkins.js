@@ -51,23 +51,23 @@ router.post('/', async (req, res, next) => {
             return res.status(400).json({ error: `outcome must be one of: ${VALID_OUTCOMES.join(', ')}` })
         }
 
-    // Verify enrolment exists
-    const enrolment = await queryOne(`SELECT id FROM enrolments WHERE id = $1`, [req.params.enrolmentId])
-    if (!enrolment) return res.status(404).json({ error: 'Enrolment not found' })
+        // Verify enrolment exists
+        const enrolment = await queryOne(`SELECT id FROM enrolments WHERE id = $1`, [req.params.enrolmentId])
+        if (!enrolment) return res.status(404).json({ error: 'Enrolment not found' })
 
-    const row = await queryOne(
-      `INSERT INTO checkins (enrolment_id, scheduled_date, actual_date, checkin_type, outcome, notes)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [
-        req.params.enrolmentId,
-        scheduled_date,
-        actual_date ?? null,
-        checkin_type,
-        outcome,
-        notes?.trim() ?? null
-      ]
-    )
-    res.status(201).json(row)
-  } catch (err) { next(err) }
+        const row = await queryOne(
+            `INSERT INTO checkins (enrolment_id, scheduled_date, actual_date, checkin_type, outcome, notes)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *`,
+            [
+                req.params.enrolmentId,
+                scheduled_date,
+                actual_date ?? null,
+                checkin_type,
+                outcome,
+                notes?.trim() ?? null
+            ]
+        )
+        res.status(201).json(row)
+    }   catch (err) { next(err) }
 })
