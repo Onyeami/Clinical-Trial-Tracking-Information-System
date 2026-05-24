@@ -51,3 +51,38 @@ router.get('/:id', async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 })
+
+// POST /api/participants
+router.post('/', async (req, res, next) => {
+    try {
+        const {
+            first_name, last_name, date_of_birth,
+            pps_number, phone, email, address,
+            consent_status = 'pending', is_active = true
+        } = req.body
+
+        if (!first_name || !last_name || !date_of_birth) {
+            return res.status(400).json({ error: 'first_name, last_name and date_of_birth are required.' })
+        }
+        if (!CONSENT_OPTS.includes(consent_status)) {
+            return res.status(400).json({ error: `consent_status must be one of: ${CONSENT_OPTS.join(', ')}` })
+        }
+
+        const row = await queryOne(
+            `INSERT INTO participants
+                (first_name, last_name, date_of_birth, pps_number, phone, email, address, consent_status, is_active)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+            RETURNING *`,
+            [
+                first_name.trim(), last_name.trim(), date_of_birth,
+                pps_number?.trim().toUpperCase() ?? null,
+                phone?.trim() ?? null,
+                email?.trim().toLowerCase() ?? null,
+                address?.trim() ?? null,
+                consent_status,
+                is_active
+            ]
+        )
+        res.status(201).json(row)
+    }   catch (err) { next(err) }
+})
