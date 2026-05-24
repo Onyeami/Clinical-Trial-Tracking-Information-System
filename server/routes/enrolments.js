@@ -132,3 +132,25 @@ router.post('/', async (req, res, next) => {
         res.status(201).json(row)
     }   catch (err) { next(err) }
 })
+
+// PUT /api/enrolments/:id
+router.put('/:id', async (req, res, next) => {
+    try {
+        const { participant_id, trial_id, phase_id, enrolment_date, status } = req.body
+
+        if (!participant_id || !trial_id || !enrolment_date) {
+            return res.status(400).json({ error: 'participant_id, trial_id and enrolment_date are required.' })
+        }
+        if (status && !VALID_STATUSES.includes(status)) {
+            return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` })
+        }
+
+        const row = await queryOne(
+            `UPDATE enrolments
+            SET participant_id = $1, trial_id = $2, phase_id = $3,
+                enrolment_date = $4, status = $5
+            WHERE id = $6
+            RETURNING *`,
+            [participant_id, trial_id, phase_id ?? null, enrolment_date, status ?? 'enrolled', req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Enrolment not found' })
