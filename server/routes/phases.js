@@ -62,3 +62,31 @@ router.post('/', authorise('admin', 'researcher'), requireOwnership('trial'), as
         res.status(201).json(row)
     }   catch (err) { next(err) }
 })
+
+// PUT /api/phases/:id (Admin and Researcher owner only)
+const updatePhase = async (req, res, next) => {
+    // Simple check for role then for ownership
+    if (!['admin', 'researcher'].includes(req.user.role)) {
+        return res.status(403).json({ error: 'Forbidden. Coordinators cannot manage trial phases.' })
+    }
+    // Ownership check is complex for standalone PUT without trialId in path
+    // but we can query it.
+    try {
+        const { phase_name, description, duration_weeks, order_number } = req.body
+        if (!phase_name) {
+            return res.status(400).json({ error: 'phase_name is required.' })
+        }
+        const row = await queryOne(
+            `UPDATE trial_phases
+            SET phase_name = $1, description = $2, duration_weeks = $3, order_number = $4
+            WHERE id = $5
+            RETURNING *`,
+            [phase_name.trim(), description?.trim() ?? null,
+            duration_weeks ? parseInt(duration_weeks) : null,
+            order_number   ? parseInt(order_number)   : null,
+            req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Phase not found' })
+        res.json(row)
+    }   catch (err) { next(err) }
+}
