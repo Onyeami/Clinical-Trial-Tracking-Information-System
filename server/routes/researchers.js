@@ -70,3 +70,17 @@ router.put('/:id', authorise('admin'), async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 })
+
+// DELETE /api/researchers/:id (Admin only)
+router.delete('/:id', authorise('admin'), async (req, res, next) => {
+    try {
+        const row = await queryOne(
+            `DELETE FROM researchers WHERE id = $1 RETURNING id`,
+            [req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Researcher not found' })
+        res.status(204).send()
+    }   catch (err) { next(err) }
+})
+
+module.exports = router
