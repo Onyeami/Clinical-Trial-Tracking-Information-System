@@ -1,0 +1,10 @@
+// Central error handler — must have 4 params for Express to treat as error middleware
+function errorHandler(err, req, res, next) {
+    console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} —`, err.message)
+
+    // PostgreSQL unique violation
+    if (err.code === '23505') {
+        const detail = err.detail || ''
+        const field = detail.match(/\(([^)]+)\)/)?.[1] ?? 'field'
+        return res.status(409).json({ error: `Duplicate value: ${field} already exists.` })
+    }
