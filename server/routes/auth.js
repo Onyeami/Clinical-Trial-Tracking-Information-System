@@ -53,3 +53,14 @@ router.post('/login', async (req, res, next) => {
         next(err)
     }
 })
+
+/**
+ * GET /api/auth/me
+ * Protected endpoint to get current user info from token
+ */
+const { authenticate } = require('../middleware/auth')
+router.get('/me', authenticate, (req, res) => {
+    res.json({ user: req.user })
+})
+
+module.exports = router
