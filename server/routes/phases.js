@@ -30,3 +30,12 @@ const getById = async (req, res, next) => {
             WHERE tp.id = $1
         `, [req.params.id])
         if (!row) return res.status(404).json({ error: 'Phase not found' })
+        
+        // RBAC: Researcher ownership check
+        if (req.user.role === 'researcher' && row.researcher_id !== req.user.researcher_id) {
+            return res.status(403).json({ error: 'Access denied. This trial phase belongs to another researcher.' })
+        }
+
+        res.json(row)
+    }   catch (err) { next(err) }
+}
