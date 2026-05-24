@@ -49,3 +49,44 @@ const authorise = (...allowedRoles) => {
         next()
     }
 }
+
+/**
+ * Middleware for Researchers to ensure ownership of the trial/resource
+ * Note: Only applies if req.user.role === 'researcher'
+ * Admin bypasses this check.
+ */
+const requireOwnership = (resourceType) => {
+    return async (req, res, next) => {
+        const user = req.user
+        if (!user) return res.status(401).json({ error: 'Auth required' })
+        
+        // Admins have full access
+        if (user.role === 'admin') return next()
+
+        // Coordinators don't own trials, they just work on them. 
+        // Usually combined with authorize('admin', 'researcher')
+        if (user.role === 'coordinator') {
+            return res.status(403).json({ error: 'Coordinators do not have ownership privileges.' })
+        }
+
+        const resourceId = req.params.id || req.params.trialId
+
+        try {
+            if (resourceType === 'trial') {
+                const trial = await queryOne('SELECT researcher_id FROM trials WHERE id = $1', [resourceId])
+                if (!trial) return res.status(404).json({ error: 'Trial not found' })
+
+                if (trial.researcher_id !== user.researcher_id) {
+                    return res.status(403).json({ error: 'Access denied. This trial belongs to another researcher.' })
+                }
+            }
+
+            // If we reach here, ownership is confirmed or user is admin
+            next()
+        }   catch (err) {
+            next(err)
+        }
+    }
+}
+
+module.exports = { authenticate, authorise, requireOwnership }
