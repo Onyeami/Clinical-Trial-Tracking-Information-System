@@ -73,3 +73,12 @@ router.get('/:id', async (req, res, next) => {
             [req.params.id]
         )
         if (!row) return res.status(404).json({ error: 'Enrolment not found' })
+
+        // RBAC: Researcher can only see their own trial data
+        if (req.user.role === 'researcher' && row.researcher_id !== req.user.researcher_id) {
+            return res.status(403).json({ error: 'Access denied. This enrolment belongs to another researcher.' })
+        }
+
+        res.json(row)
+    } catch (err) { next(err) }
+})
