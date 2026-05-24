@@ -28,3 +28,9 @@ function errorHandler(err, req, res, next) {
     res.status(status).json({ error: err.message || 'Internal server error' })
 }
 
+// 404 handler for unmatched routes
+function notFound(req, res) {
+    res.status(404).json({ error: `Route ${req.method} ${req.path} not found` })
+}
+
+module.exports = { errorHandler, notFound }
