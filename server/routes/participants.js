@@ -125,3 +125,17 @@ router.put('/:id', async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 })
+
+// DELETE /api/participants/:id — soft delete (sets is_active = false)
+router.delete('/:id', async (req, res, next) => {
+    try {
+        const row = await queryOne(
+            `UPDATE participants SET is_active = false WHERE id = $1 RETURNING id`,
+            [req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Participant not found' })
+        res.status(204).send()
+    }   catch (err) { next(err) }
+})
+
+module.exports = router
