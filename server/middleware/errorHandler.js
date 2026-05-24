@@ -13,3 +13,9 @@ function errorHandler(err, req, res, next) {
     if (err.code === '23503') {
         return res.status(400).json({ error: 'Referenced record does not exist.' })
     }
+
+    // PostgreSQL check constraint
+    if (err.code === '23514') {
+        return res.status(400).json({ error: 'Invalid value for a constrained field.' })
+    }
+}
