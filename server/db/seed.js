@@ -166,3 +166,29 @@ async function seed(existingClient = null) {
             past2, past1, future1, today // $5-8
         ])
 
+        await client.query('COMMIT')
+        console.log("✓ Database seeded with St Vincent's sample data")
+        console.log(`  ${researchers.length} researchers`)
+        console.log(`  ${trialsData.length} trials`)
+        console.log(`  ${phasesData.length} phases`)
+        console.log(`  ${parts.length} participants`)
+        console.log(`  ${enrolData.length} enrolments`)
+        console.log('  10 check-ins')
+    }   catch (err) {
+        await client.query('ROLLBACK')
+        console.error('Seeding failed:', err.message)
+        throw err
+    }   finally {
+        if (!existingClient) {
+            client.release()
+            await pool.end()
+        }
+    }
+}
+
+module.exports = { seed }
+
+if (require.main === module) {
+    seed().catch(() => process.exit(1))
+}
+
