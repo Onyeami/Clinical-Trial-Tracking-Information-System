@@ -90,3 +90,17 @@ const updatePhase = async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 }
+
+// DELETE /api/phases/:id (Admin and Researcher owner only)
+const deletePhase = async (req, res, next) => {
+    if (!['admin', 'researcher'].includes(req.user.role)) {
+        return res.status(403).json({ error: 'Forbidden. Coordinators cannot delete trial phases.' })
+    }
+    try {
+        const row = await queryOne(`DELETE FROM trial_phases WHERE id = $1 RETURNING id`, [req.params.id])
+        if (!row) return res.status(404).json({ error: 'Phase not found' })
+        res.status(204).send()
+    }   catch (err) { next(err) }
+}
+
+module.exports = { router, getById, updatePhase, deletePhase }
