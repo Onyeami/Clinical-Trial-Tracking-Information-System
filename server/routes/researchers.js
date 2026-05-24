@@ -51,3 +51,22 @@ router.post('/', authorise('admin'), async (req, res, next) => {
         res.status(201).json(row)
     }   catch (err) { next(err) }
 })
+
+// PUT /api/researchers/:id (Admin only)
+router.put('/:id', authorise('admin'), async (req, res, next) => {
+    try {
+        const { first_name, last_name, email, department } = req.body
+        if (!first_name || !last_name || !email) {
+            return res.status(400).json({ error: 'first_name, last_name and email are required.' })
+        }
+        const row = await queryOne(
+            `UPDATE researchers
+            SET first_name = $1, last_name = $2, email = $3, department = $4
+            WHERE id = $5
+            RETURNING *`,
+            [first_name.trim(), last_name.trim(), email.trim().toLowerCase(), department?.trim() ?? null, req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Researcher not found' })
+        res.json(row)
+    }   catch (err) { next(err) }
+})
