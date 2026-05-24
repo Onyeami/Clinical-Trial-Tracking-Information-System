@@ -114,3 +114,21 @@ router.post('/', async (req, res, next) => {
         if (participant.consent_status !== 'given') {
             return res.status(400).json({ error: 'Participant has not given consent.' })
         }
+
+        // RBAC: Researcher check trial ownership
+        if (req.user.role === 'researcher') {
+            const trial = await queryOne('SELECT researcher_id FROM trials WHERE id = $1', [trial_id])
+            if (trial && trial.researcher_id !== req.user.researcher_id) {
+                return res.status(403).json({ error: 'Access denied. You can only enrol participants in your own trials.' })
+            }
+        }
+
+        const row = await queryOne(
+            `INSERT INTO enrolments (participant_id, trial_id, phase_id, enrolment_date, status)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *`,
+            [participant_id, trial_id, phase_id ?? null, enrolment_date, status]
+        )
+        res.status(201).json(row)
+    }   catch (err) { next(err) }
+})
