@@ -53,3 +53,23 @@ router.get('/', async (req, res, next) => {
         res.json(rows)
     }   catch (err) { next(err) }
 })
+
+// GET /api/enrolments/:id
+router.get('/:id', async (req, res, next) => {
+    try {
+        const row = await queryOne(
+            `SELECT e.*,
+                    p.first_name || ' ' || p.last_name AS participant_name,
+                    t.title AS trial_title, t.researcher_id,
+                    tp.phase_name,
+                    COUNT(c.id)::int AS checkin_count
+                FROM enrolments e
+                JOIN participants p  ON p.id = e.participant_id
+                JOIN trials t        ON t.id = e.trial_id
+                LEFT JOIN trial_phases tp ON tp.id = e.phase_id
+                LEFT JOIN checkins c ON c.enrolment_id = e.id
+                WHERE e.id = $1
+                GROUP BY e.id, p.first_name, p.last_name, t.title, t.researcher_id, tp.phase_name`,
+            [req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Enrolment not found' })
