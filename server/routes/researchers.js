@@ -34,3 +34,20 @@ router.get('/:id', async (req, res, next) => {
         res.json(row)
     } catch (err) { next(err) }
 })
+
+// POST /api/researchers (Admin only)
+router.post('/', authorise('admin'), async (req, res, next) => {
+    try {
+        const { first_name, last_name, email, department } = req.body
+        if (!first_name || !last_name || !email) {
+            return res.status(400).json({ error: 'first_name, last_name and email are required.' })
+        }
+        const row = await queryOne(
+            `INSERT INTO researchers (first_name, last_name, email, department)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *`,
+            [first_name.trim(), last_name.trim(), email.trim().toLowerCase(), department?.trim() ?? null]
+        )
+        res.status(201).json(row)
+    }   catch (err) { next(err) }
+})
