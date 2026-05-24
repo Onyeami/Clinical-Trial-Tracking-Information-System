@@ -39,3 +39,26 @@ const getById = async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 }
+
+// POST /api/trials/:trialId/phases (Admin and Researcher owner only)
+router.post('/', authorise('admin', 'researcher'), requireOwnership('trial'), async (req, res, next) => {
+    try {
+        const { phase_name, description, duration_weeks, order_number } = req.body
+        if (!phase_name) {
+            return res.status(400).json({ error: 'phase_name is required.' })
+        }
+        // Verify trial exists
+        const trial = await queryOne(`SELECT id FROM trials WHERE id = $1`, [req.params.trialId])
+        if (!trial) return res.status(404).json({ error: 'Trial not found' })
+
+        const row = await queryOne(
+            `INSERT INTO trial_phases (trial_id, phase_name, description, duration_weeks, order_number)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *`,
+            [req.params.trialId, phase_name.trim(), description?.trim() ?? null,
+            duration_weeks ? parseInt(duration_weeks) : null,
+            order_number  ? parseInt(order_number)  : null]
+        )
+        res.status(201).json(row)
+    }   catch (err) { next(err) }
+})
