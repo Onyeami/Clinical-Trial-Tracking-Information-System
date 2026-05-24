@@ -121,3 +121,22 @@ const updateCheckin = async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 }
+
+// Standalone delete handler (Admin only)
+const deleteCheckin = async (req, res, next) => {
+    // We wrap authorsiation check here or in app.js
+    // Let's do it in the exported function by wrapping it if needed, 
+    // but better to apply it where it's mounted.
+    // Actually, I'll just check in the handler for simplicity since it's a standalone handler.
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden. Only Admins can delete clinical data.' })
+    }
+    try {
+        const row = await queryOne(`DELETE FROM checkins WHERE id = $1 RETURNING id`, [req.params.id])
+        if (!row) return res.status(404).json({ error: 'Check-in not found' })
+        res.status(204).send()
+    }   catch (err) { next(err) }
+}
+
+module.exports = { router, getById, updateCheckin, deleteCheckin }
+
