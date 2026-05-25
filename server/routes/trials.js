@@ -42,3 +42,23 @@ router.get('/', async (req, res, next) => {
         res.json(rows)
     }   catch (err) { next(err) }
 })
+
+// GET /api/trials/:id
+router.get('/:id', async (req, res, next) => {
+    try {
+        const row = await queryOne(
+            `SELECT t.*, r.first_name || ' ' || r.last_name AS researcher_name,
+                    COUNT(DISTINCT e.id)::int AS enrolment_count,
+                    COUNT(DISTINCT tp.id)::int AS phase_count
+            FROM trials t
+            LEFT JOIN researchers r ON r.id = t.researcher_id
+            LEFT JOIN enrolments e  ON e.trial_id = t.id
+            LEFT JOIN trial_phases tp ON tp.trial_id = t.id
+            WHERE t.id = $1
+            GROUP BY t.id, r.first_name, r.last_name`,
+            [req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Trial not found' })
+        res.json(row)
+    }   catch (err) { next(err) }
+})
