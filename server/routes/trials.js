@@ -21,3 +21,24 @@ router.get('/', async (req, res, next) => {
         `
         const params = []
         const conditions = []
+
+        // ── RBAC: Researcher filter ───────────────────────────────────────────
+        if (req.user.role === 'researcher') {
+            params.push(req.user.researcher_id)
+            conditions.push(`t.researcher_id = $${params.length}`)
+        }
+
+        if (status && VALID_STATUSES.includes(status)) {
+            params.push(status)
+            conditions.push(`t.status = $${params.length}`)
+        }
+
+        if (conditions.length) {
+            sql += ` WHERE ${conditions.join(' AND ')}`
+        }
+
+        sql += ` ORDER BY t.created_at DESC`
+        const { rows } = await query(sql, params)
+        res.json(rows)
+    }   catch (err) { next(err) }
+})
