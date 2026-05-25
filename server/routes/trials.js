@@ -87,3 +87,27 @@ router.post('/', authorise('admin', 'researcher'), async (req, res, next) => {
         res.status(201).json(row)
     }   catch (err) { next(err) }
 })
+
+// PUT /api/trials/:id (Admin and Researcher owner only)
+router.put('/:id', authorise('admin', 'researcher'), requireOwnership('trial'), async (req, res, next) => {
+    try {
+        const { title, description, researcher_id, start_date, end_date, status } = req.body
+        if (!title || !start_date) {
+            return res.status(400).json({ error: 'title and start_date are required.' })
+        }
+        if (status && !VALID_STATUSES.includes(status)) {
+            return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` })
+        }
+        const row = await queryOne(
+            `UPDATE trials
+            SET title = $1, description = $2, researcher_id = $3,
+                start_date = $4, end_date = $5, status = $6
+            WHERE id = $7
+            RETURNING *`,
+            [title.trim(), description?.trim() ?? null, researcher_id ?? null,
+            start_date, end_date ?? null, status ?? 'recruiting', req.params.id]
+        )
+        if (!row) return res.status(404).json({ error: 'Trial not found' })
+        res.json(row)
+    } catch (err) { next(err) }
+})
