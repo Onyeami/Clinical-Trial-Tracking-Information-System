@@ -111,3 +111,22 @@ router.put('/:id', authorise('admin', 'researcher'), requireOwnership('trial'), 
         res.json(row)
     } catch (err) { next(err) }
 })
+
+// DELETE /api/trials/:id (Admin and Researcher owner only)
+router.delete('/:id', authorise('admin', 'researcher'), requireOwnership('trial'), async (req, res, next) => {
+    try {
+        // Check for active enrolments
+        const active = await queryOne(
+            `SELECT COUNT(*)::int AS cnt FROM enrolments WHERE trial_id = $1 AND status = 'enrolled'`,
+            [req.params.id]
+        )
+        if (active.cnt > 0) {
+            return res.status(409).json({ error: 'Cannot delete a trial with active enrolments. Withdraw participants first.' })
+        }
+        const row = await queryOne(`DELETE FROM trials WHERE id = $1 RETURNING id`, [req.params.id])
+        if (!row) return res.status(404).json({ error: 'Trial not found' })
+        res.status(204).send()
+    } catch (err) { next(err) }
+})
+
+module.exports = router
