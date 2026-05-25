@@ -62,3 +62,28 @@ router.get('/:id', async (req, res, next) => {
         res.json(row)
     }   catch (err) { next(err) }
 })
+
+// POST /api/trials (Admin and Researcher only)
+router.post('/', authorise('admin', 'researcher'), async (req, res, next) => {
+    try {
+        let { title, description, researcher_id, start_date, end_date, status = 'recruiting' } = req.body
+
+        // If researcher, override researcher_id with their own
+        if (req.user.role === 'researcher') {
+            researcher_id = req.user.researcher_id
+        }
+        if (!title || !start_date) {
+            return res.status(400).json({ error: 'title and start_date are required.' })
+        }
+        if (!VALID_STATUSES.includes(status)) {
+            return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` })
+        }
+        const row = await queryOne(
+            `INSERT INTO trials (title, description, researcher_id, start_date, end_date, status)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *`,
+            [title.trim(), description?.trim() ?? null, researcher_id ?? null, start_date, end_date ?? null, status]
+        )
+        res.status(201).json(row)
+    }   catch (err) { next(err) }
+})
