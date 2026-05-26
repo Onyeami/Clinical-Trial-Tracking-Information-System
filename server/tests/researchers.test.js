@@ -113,34 +113,32 @@ describe('Trials CRUD', () => {
     test('POST /api/trials rejects invalid status', async () => {
         const res = await request(app).post('/api/trials').send({
             title: 'Bad', start_date: '2025-01-01', status: 'invalid'
-        
+        })
+        expect(res.status).toBe(400)
     })
-    expect(res.status).toBe(400)
-  })
 
-  test('GET /api/trials returns list', async () => {
-    const res = await request(app).get('/api/trials')
-    expect(res.status).toBe(200)
-    expect(res.body.length).toBeGreaterThan(0)
-  })
-
-  test('GET /api/trials?status=recruiting filters correctly', async () => {
-    const res = await request(app).get('/api/trials?status=recruiting')
-    expect(res.status).toBe(200)
-    expect(res.body.every(t => t.status === 'recruiting')).toBe(true)
-  })
-
-  test('PUT /api/trials/:id updates status', async () => {
-    const res = await request(app).put(`/api/trials/${trialId}`).send({
-      title: 'TEST-TRIAL-001', start_date: '2025-01-01', status: 'active'
+    test('GET /api/trials returns list', async () => {
+        const res = await request(app).get('/api/trials')
+        expect(res.status).toBe(200)
+        expect(res.body.length).toBeGreaterThan(0)
     })
-    expect(res.status).toBe(200)
-    expect(res.body.status).toBe('active')
-  })
 
-  
-  test('DELETE /api/trials/:id with no active enrolments succeeds', async () => {
-    const res = await request(app).delete(`/api/trials/${trialId}`)
-    expect(res.status).toBe(204)
-  })
+    test('GET /api/trials?status=recruiting filters correctly', async () => {
+        const res = await request(app).get('/api/trials?status=recruiting')
+        expect(res.status).toBe(200)
+        expect(res.body.every(t => t.status === 'recruiting')).toBe(true)
+    })
+
+    test('PUT /api/trials/:id updates status', async () => {
+        const res = await request(app).put(`/api/trials/${trialId}`).send({
+            title: 'TEST-TRIAL-001', start_date: '2025-01-01', status: 'active'
+        })
+        expect(res.status).toBe(200)
+        expect(res.body.status).toBe('active')
+    })
+
+    test('DELETE /api/trials/:id with no active enrolments succeeds', async () => {
+        const res = await request(app).delete(`/api/trials/${trialId}`)
+        expect(res.status).toBe(204)
+    })
 })
