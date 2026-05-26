@@ -87,32 +87,33 @@ describe('Researchers CRUD', () => {
 
 // ── Trials ───────────────────────────────────────────────────────────────────
 describe('Trials CRUD', () => {
-  let researcherId, trialId
+    let researcherId, trialId
 
-  beforeAll(async () => {
-    const { rows } = await pool.query(
-      `INSERT INTO researchers (first_name, last_name, email, department)
-       VALUES ('Trial','Researcher','trial.res@svuh.ie','Oncology') RETURNING id`
-    )
-    researcherId = rows[0].id
-  })
-
-  test('POST /api/trials creates a trial', async () => {
-    const res = await request(app).post('/api/trials').send({
-      title:         'TEST-TRIAL-001',
-      description:   'A test trial',
-      researcher_id: researcherId,
-      start_date:    '2025-01-01',
-      status:        'recruiting',
+    beforeAll(async () => {
+        const { rows } = await pool.query(
+            `INSERT INTO researchers (first_name, last_name, email, department)
+            VALUES ('Trial','Researcher','trial.res@svuh.ie','Oncology') RETURNING id`
+        )
+        researcherId = rows[0].id
     })
-    expect(res.status).toBe(201)
-    expect(res.body.title).toBe('TEST-TRIAL-001')
-    trialId = res.body.id
-  })
 
-  test('POST /api/trials rejects invalid status', async () => {
-    const res = await request(app).post('/api/trials').send({
-      title: 'Bad', start_date: '2025-01-01', status: 'invalid'
+    test('POST /api/trials creates a trial', async () => {
+        const res = await request(app).post('/api/trials').send({
+            title:         'TEST-TRIAL-001',
+            description:   'A test trial',
+            researcher_id: researcherId,
+            start_date:    '2025-01-01',
+            status:        'recruiting',
+        })
+        expect(res.status).toBe(201)
+        expect(res.body.title).toBe('TEST-TRIAL-001')
+        trialId = res.body.id
+    })
+
+    test('POST /api/trials rejects invalid status', async () => {
+        const res = await request(app).post('/api/trials').send({
+            title: 'Bad', start_date: '2025-01-01', status: 'invalid'
+        
     })
     expect(res.status).toBe(400)
   })
