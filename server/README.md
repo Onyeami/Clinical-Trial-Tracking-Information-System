@@ -49,3 +49,71 @@ clinical-trial-backend/
 ```
 
 ---
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+Copy `.env.example` to `.env` and fill in your PostgreSQL credentials:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```
+DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/clinical_trials
+PORT=3001
+NODE_ENV=development
+```
+
+### 3. Create the database
+
+In psql or pgAdmin, create the database:
+
+```sql
+CREATE DATABASE clinical_trials;
+```
+
+### 4. Run the server
+
+The schema is created automatically on first start:
+
+```bash
+# Development (auto-restarts on file change)
+npm run dev
+
+# Production
+npm start
+```
+
+### 5. Seed sample data (optional)
+
+Loads 4 researchers, 4 trials, 10 phases, 8 participants, 8 enrolments, and 10 check-ins:
+
+```bash
+npm run seed
+```
+
+---
+
+## Running Tests
+
+```bash
+npm test
+```
+
+Tests use the same database as development (configured in `.env`).  
+Each test suite clears its tables in `beforeAll` to ensure a clean state.
+
+The integration test (`integration.test.js`) covers a full 13-step clinical trial lifecycle:
+researcher → trial → phase → participant → enrolment → check-in scheduled → attended → completed.
+
+---
