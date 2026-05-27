@@ -117,3 +117,73 @@ The integration test (`integration.test.js`) covers a full 13-step clinical tria
 researcher → trial → phase → participant → enrolment → check-in scheduled → attended → completed.
 
 ---
+
+## API Reference
+
+### Health
+
+| Method | Endpoint       | Description        |
+|--------|----------------|--------------------|
+| GET    | /api/health    | Server health check|
+
+### Researchers
+
+| Method | Endpoint                | Description              |
+|--------|-------------------------|--------------------------|
+| GET    | /api/researchers        | List all researchers     |
+| GET    | /api/researchers/:id    | Get one researcher       |
+| POST   | /api/researchers        | Create researcher        |
+| PUT    | /api/researchers/:id    | Update researcher        |
+| DELETE | /api/researchers/:id    | Delete researcher        |
+
+### Trials
+
+| Method | Endpoint                | Description                        |
+|--------|-------------------------|------------------------------------|
+| GET    | /api/trials             | List trials (filter: ?status=)     |
+| GET    | /api/trials/:id         | Get one trial (with counts)        |
+| POST   | /api/trials             | Create trial                       |
+| PUT    | /api/trials/:id         | Update trial                       |
+| DELETE | /api/trials/:id         | Delete trial (blocked if enrolled) |
+
+### Trial Phases
+
+| Method | Endpoint                          | Description        |
+|--------|-----------------------------------|--------------------|
+| GET    | /api/trials/:trialId/phases       | List phases        |
+| POST   | /api/trials/:trialId/phases       | Add phase to trial |
+| GET    | /api/phases/:id                   | Get one phase      |
+| PUT    | /api/phases/:id                   | Update phase       |
+| DELETE | /api/phases/:id                   | Delete phase       |
+
+### Participants
+
+| Method | Endpoint                  | Description                           |
+|--------|---------------------------|---------------------------------------|
+| GET    | /api/participants         | List all (filter: ?search=)           |
+| GET    | /api/participants/:id     | Get one (includes pps_number)         |
+| POST   | /api/participants         | Register participant                  |
+| PUT    | /api/participants/:id     | Update participant                    |
+| DELETE | /api/participants/:id     | Soft delete (sets is_active = false)  |
+
+### Enrolments
+
+| Method | Endpoint                    | Description                              |
+|--------|-----------------------------|------------------------------------------|
+| GET    | /api/enrolments             | List (filter: ?trial_id= &status= &participant_id=) |
+| GET    | /api/enrolments/:id         | Get one enrolment                        |
+| POST   | /api/enrolments             | Enrol participant (checks consent + duplicates) |
+| PUT    | /api/enrolments/:id         | Update enrolment                         |
+| DELETE | /api/enrolments/:id         | Remove enrolment                         |
+
+### Check-ins
+
+| Method | Endpoint                                 | Description             |
+|--------|------------------------------------------|-------------------------|
+| GET    | /api/enrolments/:enrolmentId/checkins    | List check-ins          |
+| POST   | /api/enrolments/:enrolmentId/checkins    | Schedule check-in       |
+| GET    | /api/checkins/:id                        | Get one check-in        |
+| PUT    | /api/checkins/:id                        | Update check-in outcome |
+| DELETE | /api/checkins/:id                        | Delete check-in         |
+
+---
