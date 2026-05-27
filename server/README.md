@@ -187,3 +187,24 @@ researcher → trial → phase → participant → enrolment → check-in schedu
 | DELETE | /api/checkins/:id                        | Delete check-in         |
 
 ---
+
+## Business Logic & Validation
+
+- A participant **cannot be enrolled** in the same trial twice (HTTP 409)
+- A participant **must have consent_status = 'given'** to be enrolled (HTTP 400)
+- An inactive participant **cannot be enrolled** (HTTP 400)
+- A trial **cannot be deleted** while participants have status = 'enrolled' (HTTP 409)
+- Deleting a participant is a **soft delete** — `is_active` is set to false, preserving audit history
+- **PPS numbers** are excluded from list responses; only returned on single-record GET
+
+## HTTP Status Codes
+
+| Code | Meaning                        |
+|------|--------------------------------|
+| 200  | OK                             |
+| 201  | Created                        |
+| 204  | Deleted (no content)           |
+| 400  | Bad request / validation error |
+| 404  | Record not found               |
+| 409  | Conflict (duplicate / blocked) |
+| 500  | Internal server error          |
