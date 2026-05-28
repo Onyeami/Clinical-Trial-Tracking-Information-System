@@ -1,0 +1,22 @@
+{
+    "name": "clinical-trial-frontend",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+        "dev:frontend": "vite",
+        "dev:backend": "npm run dev --prefix server",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^4.0.3",
+        "concurrently": "^9.2.1",
+        "vite": "^4.4.5"
+    }
+}
