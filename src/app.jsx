@@ -90,7 +90,7 @@ export default function App() {
                             </div>
                         </div>
                         <button className="btn-logout" onClick={handleLogout} title="Sign Out">
-                            Logout 🔒
+                            Logout
                         </button>
                     </div>
                     <div className="staff-meta">
