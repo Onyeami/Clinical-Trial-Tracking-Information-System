@@ -1,0 +1,3 @@
+@echo off
+echo Starting Clinical Trial App (Frontend and Backend)...
+npm run dev
