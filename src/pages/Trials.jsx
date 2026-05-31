@@ -7,74 +7,74 @@ const PHASE_EMPTY  = { phase_name: '', description: '', duration_weeks: '', orde
 const TRIAL_STATUSES = ['recruiting', 'active', 'completed', 'suspended']
 
 export default function Trials() {
-  const [list, setList]             = useState([])
-  const [resList, setResList]       = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [search, setSearch]         = useState('')
-  const [statusFilter, setStatus]   = useState('all')
-  const [selected, setSelected]     = useState(null)  // trial detail view
-  const [phaseList, setPhaseList]   = useState([])
+    const [list, setList]             = useState([])
+    const [resList, setResList]       = useState([])
+    const [loading, setLoading]       = useState(true)
+    const [search, setSearch]         = useState('')
+    const [statusFilter, setStatus]   = useState('all')
+    const [selected, setSelected]     = useState(null)  // trial detail view
+    const [phaseList, setPhaseList]   = useState([])
 
-  const [trialModal, setTrialModal] = useState(false)
-  const [editingTrial, setEditingTrial] = useState(null)
-  const [phaseModal, setPhaseModal] = useState(false)
-  const [editingPhase, setEditingPhase] = useState(null)
-  const [delTrial, setDelTrial]     = useState(null)
-  const [delPhase, setDelPhase]     = useState(null)
+    const [trialModal, setTrialModal] = useState(false)
+    const [editingTrial, setEditingTrial] = useState(null)
+    const [phaseModal, setPhaseModal] = useState(false)
+    const [editingPhase, setEditingPhase] = useState(null)
+    const [delTrial, setDelTrial]     = useState(null)
+    const [delPhase, setDelPhase]     = useState(null)
 
-  const [err, setErr]   = useState('')
-  const [ok, setOk]     = useState('')
-  const [saving, setSaving] = useState(false)
+    const [err, setErr]   = useState('')
+    const [ok, setOk]     = useState('')
+    const [saving, setSaving] = useState(false)
 
-  const tForm = useForm(TRIAL_EMPTY)
-  const pForm = useForm(PHASE_EMPTY)
+    const tForm = useForm(TRIAL_EMPTY)
+    const pForm = useForm(PHASE_EMPTY)
 
-  const loadTrials = () => {
-    setLoading(true)
-    Promise.all([trials.list(), researchers.list().catch(() => [])])
-      .then(([t, r]) => { setList(t); setResList(r) })
-      .catch(() => setErr('Failed to load trials'))
-      .finally(() => setLoading(false))
-  }
+    const loadTrials = () => {
+        setLoading(true)
+        Promise.all([trials.list(), researchers.list().catch(() => [])])
+            .then(([t, r]) => { setList(t); setResList(r) })
+            .catch(() => setErr('Failed to load trials'))
+            .finally(() => setLoading(false))
+    }
 
-  const loadPhases = (trialId) => {
-    phases.list(trialId).then(setPhaseList).catch(() => {})
-  }
+    const loadPhases = (trialId) => {
+        phases.list(trialId).then(setPhaseList).catch(() => {})
+    }
 
-  useEffect(() => { loadTrials() }, [])
-  useEffect(() => { if (selected) loadPhases(selected.id) }, [selected])
+    useEffect(() => { loadTrials() }, [])
+    useEffect(() => { if (selected) loadPhases(selected.id) }, [selected])
+    
+    const filtered = list.filter(t => {
+        const matchSearch = t.title.toLowerCase().includes(search.toLowerCase())
+        const matchStatus = statusFilter === 'all' || t.status === statusFilter
+        return matchSearch && matchStatus
+    })
 
-  const filtered = list.filter(t => {
-    const matchSearch = t.title.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = statusFilter === 'all' || t.status === statusFilter
-    return matchSearch && matchStatus
-  })
+    // Trial CRUD
+    const openAddTrial = () => { tForm.reset(); setEditingTrial(null); setErr(''); setTrialModal(true) }
+    const openEditTrial = (t) => { tForm.setForm({ ...t }); setEditingTrial(t); setErr(''); setTrialModal(true) }
 
-  // Trial CRUD
-  const openAddTrial = () => { tForm.reset(); setEditingTrial(null); setErr(''); setTrialModal(true) }
-  const openEditTrial = (t) => { tForm.setForm({ ...t }); setEditingTrial(t); setErr(''); setTrialModal(true) }
+    const saveTrial = async () => {
+        if (!tForm.form.title || !tForm.form.start_date) { setErr('Title and start date are required.'); return }
+        setSaving(true); setErr('')
+        try {
+            if (editingTrial) { await trials.update(editingTrial.id, tForm.form); if (selected?.id === editingTrial.id) setSelected({ ...selected, ...tForm.form }) }
+            else await trials.create(tForm.form)
+            setOk(editingTrial ? 'Trial updated.' : 'Trial created.')
+            setTrialModal(false); loadTrials(); setTimeout(() => setOk(''), 3000)
+        }   catch (e) { setErr(e.message) }
+        finally { setSaving(false) }
+    }
 
-  const saveTrial = async () => {
-    if (!tForm.form.title || !tForm.form.start_date) { setErr('Title and start date are required.'); return }
-    setSaving(true); setErr('')
-    try {
-      if (editingTrial) { await trials.update(editingTrial.id, tForm.form); if (selected?.id === editingTrial.id) setSelected({ ...selected, ...tForm.form }) }
-      else await trials.create(tForm.form)
-      setOk(editingTrial ? 'Trial updated.' : 'Trial created.')
-      setTrialModal(false); loadTrials(); setTimeout(() => setOk(''), 3000)
-    } catch (e) { setErr(e.message) }
-    finally { setSaving(false) }
-  }
-
-  const deleteTrial = async () => {
-    setSaving(true)
-    try {
-      await trials.delete(delTrial.id)
-      setDelTrial(null); loadTrials(); setSelected(null)
-      setOk('Trial deleted.'); setTimeout(() => setOk(''), 3000)
-    } catch (e) { setErr(e.message); setDelTrial(null) }
-    finally { setSaving(false) }
-  }
+    const deleteTrial = async () => {
+        setSaving(true)
+        try {
+            await trials.delete(delTrial.id)
+            setDelTrial(null); loadTrials(); setSelected(null)
+            setOk('Trial deleted.'); setTimeout(() => setOk(''), 3000)
+        }   catch (e) { setErr(e.message); setDelTrial(null) }
+        finally { setSaving(false) }
+    }
 
   // Phase CRUD
   const openAddPhase = () => { pForm.reset(); setEditingPhase(null); setErr(''); setPhaseModal(true) }
