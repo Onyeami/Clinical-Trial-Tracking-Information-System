@@ -59,6 +59,7 @@ After seeding the database, you can use the following accounts:
 | **Coordinator** | `coord@svuh.ie` | `password123` |
 | **Researcher** | `s.obrien@svuh.ie` | `password123` |
 | **Researcher** | `c.murphy@svuh.ie` | `password123` |
+| **Researcher** | `a.walsh@svuh.ie` | `password123` |
 
 ---
 
