@@ -60,6 +60,7 @@ After seeding the database, you can use the following accounts:
 | **Researcher** | `s.obrien@svuh.ie` | `password123` |
 | **Researcher** | `c.murphy@svuh.ie` | `password123` |
 | **Researcher** | `a.walsh@svuh.ie` | `password123` |
+| **Researcher** | `d.flanagan@svuh.ie` | `password123` |
 
 ---
 
